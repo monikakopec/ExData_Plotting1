@@ -6,21 +6,21 @@ list.files("./")
 unzip(dest)
 
 # reading data
-data_row<-read.table("./household_power_consumption.txt", sep=";", header=TRUE)
+data_row<-read.table("./household_power_consumption.txt", sep=";", header=TRUE, na.strings="?", colClasses=c(rep("character", 2), rep("numeric", 7)))
 
 # reading data only from 2007-02-01 and 2007-02-02
-aa<-cbind(data_row, as.Date(strptime(data_row$Date, format="%d/%m/%Y")))
-colnames(aa)[10]<-"Data"
-final<-aa[aa$Data=="2007-02-01" | aa$Data=="2007-02-02",]
+data_row$Time <- strptime(paste(data_row$Date, data_row$Time), "%d/%m/%Y %H:%M:%S")
+data_row$Date <- as.Date(data_row$Date, "%d/%m/%Y")
+final<-data_row[data_row$Date>="2007-02-01" & data_row$Date<="2007-02-02",]
 
 # plot & save to a file
 png(file="plot1.png", width=480, height=480)
 hist(
-             #as.numeric(paste(final[final$Global_active_power!="?",3]))
-             as.numeric(paste(final$Global_active_power)),
-             col="red",
-             main = "Global Active Power",
-             xlab="Global Active Power (kilowatts)",
-             ylab="Frequency"
-             )
+  final$Global_active_power,
+  col="red",
+  main = "Global Active Power",
+  xlab="Global Active Power (kilowatts)",
+  ylab="Frequency"
+)
+
 dev.off()

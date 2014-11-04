@@ -6,30 +6,26 @@ list.files("./")
 unzip(dest)
 
 # reading data
-data_row<-read.table("./household_power_consumption.txt", sep=";", header=TRUE)
+data_row<-read.table("./household_power_consumption.txt", sep=";", header=TRUE, na.strings="?", colClasses=c(rep("character", 2), rep("numeric", 7)))
 
 # reading data only from 2007-02-01 and 2007-02-02
-aa<-cbind(data_row, as.Date(strptime(data_row$Date, format="%d/%m/%Y")))
-colnames(aa)[10]<-"Data"
-final<-aa[aa$Data=="2007-02-01" | aa$Data=="2007-02-02",]
+data_row$Time <- strptime(paste(data_row$Date, data_row$Time), "%d/%m/%Y %H:%M:%S")
+data_row$Date <- as.Date(data_row$Date, "%d/%m/%Y")
+final<-data_row[data_row$Date>="2007-02-01" & data_row$Date<="2007-02-02",]
 
 # plot & save to a file
 png(file="plot3.png", width=480, height=480)
-with(final, plot(
-  x=as.numeric(paste(final$Sub_metering_1)),
+plot(
+  final$Time,
+  final$Sub_metering_1,
   xlab="",
   type="l",
   col="black",
   ylab="Energy sub metering"
-))
-with(final, lines(
-  x=as.numeric(paste(final$Sub_metering_2)),
-  col="red"
-))
-with(final, lines(
-  x=as.numeric(paste(final$Sub_metering_3)),
-  col="blue"
-))
-legend("topright",pch=1,col=c("black","red","blue"),
+)
+lines(final$Time, final$Sub_metering_2, col="red")
+lines(final$Time, final$Sub_metering_3,  col="blue")
+legend("topright",lty=1,col=c("black","red","blue"),
        legend=c("Sub_metering_1","Sub_metering_2","Sub_metering_3"))
+
 dev.off()
